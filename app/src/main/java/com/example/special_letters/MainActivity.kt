@@ -16,27 +16,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.special_letters.ui.theme.Special_lettersTheme
+import androidx.core.net.toUri
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // --- 启动悬浮窗服务 ---
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (!Settings.canDrawOverlays(this)) {
-                val intent = Intent(
-                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    Uri.parse("package:$packageName")
-                )
-                startActivity(intent)
-            } else {
-                startFloatingService()
-            }
+        // start floating window service
+        if (!Settings.canDrawOverlays(this)) {
+            val intent = Intent(
+                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                "package:$packageName".toUri()
+            )
+            startActivity(intent)
         } else {
             startFloatingService()
         }
 
+        // to show the initial UI
         setContent {
             Special_lettersTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
@@ -49,8 +47,11 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // to show the floating letters. this function can only be called within this class
     private fun startFloatingService() {
+        // an intent to tell FloatingService is to be called
         val intent = Intent(this, FloatingService::class.java)
+        // run floating service in the background, even after user leaves this activity
         startService(intent)
     }
 }
@@ -63,6 +64,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
     )
 }
 
+// for UI development
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {

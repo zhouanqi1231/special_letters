@@ -1,5 +1,6 @@
 package com.example.special_letters
 
+import android.annotation.SuppressLint
 import android.app.Service
 import android.content.Intent
 import android.graphics.PixelFormat
@@ -8,26 +9,29 @@ import android.os.IBinder
 import android.view.*
 import android.widget.Button
 
+// service need not a UI, this is to create the floating buttons
 class FloatingService : Service() {
 
     private lateinit var windowManager: WindowManager
     private lateinit var floatingView: View
     private lateinit var layoutParams: WindowManager.LayoutParams
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate() {
         super.onCreate()
 
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
+        // transfer the layout file into a real view
         floatingView = LayoutInflater.from(this).inflate(R.layout.floating_buttons, null)
 
         layoutParams = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT, // auto
             WindowManager.LayoutParams.WRAP_CONTENT,
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
             else
                 WindowManager.LayoutParams.TYPE_PHONE,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, // will not override the inputting focus
             PixelFormat.TRANSLUCENT
         )
 
@@ -37,7 +41,7 @@ class FloatingService : Service() {
 
         windowManager.addView(floatingView, layoutParams)
 
-        // --- 拖动悬浮窗 ---
+        // to drag the floating window
         var initialX = 0
         var initialY = 0
         var initialTouchX = 0f
@@ -62,8 +66,9 @@ class FloatingService : Service() {
             }
         }
 
-        // --- 按钮点击发送字符 ---
+        // when button pressed, send the letter
         floatingView.findViewById<Button>(R.id.btnA).setOnClickListener {
+            // inputText is to insert one letter at the cursor's position
             MyAccessibilityService.instance?.inputText("ä")
         }
 

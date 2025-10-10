@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- floating window permission -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
@@ -11,6 +12,7 @@
         android:supportsRtl="true"
         android:theme="@android:style/Theme.NoTitleBar">
 
+        <!--greeting page of this app-->
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -20,10 +22,10 @@
             </intent-filter>
         </activity>
 
-        <!-- add floating window service -->
+        <!-- this service is to show the floating button -->
         <service android:name=".FloatingService" android:exported="false"/>
 
-        <!-- AccessibilityService 框架 -->
+        <!-- AccessibilityService -->
         <service
             android:name=".MyAccessibilityService"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
