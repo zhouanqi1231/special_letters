@@ -26,12 +26,15 @@ class MyAccessibilityService : AccessibilityService() {
 
     fun inputText(text: String) {
         val rootNode = rootInActiveWindow ?: return
-        val focusedNode = findFocusedEditText(rootNode) ?: return
+        val focusedNode = findFocusedEditText(rootNode) ?: return // get current focus
 
+        // get original text
         val originalText = focusedNode.text?.toString() ?: ""
+        // if there's a selection area
         val selectionStart = focusedNode.textSelectionStart.takeIf { it >= 0 } ?: originalText.length
         val selectionEnd = focusedNode.textSelectionEnd.takeIf { it >= 0 } ?: originalText.length
 
+        // form new text
         val newText = StringBuilder(originalText)
             .replace(selectionStart, selectionEnd, text)
             .toString()
@@ -43,59 +46,16 @@ class MyAccessibilityService : AccessibilityService() {
                 newText
             )
         }
-        val textSetSuccess = focusedNode.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
+        focusedNode.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
 
-        if (textSetSuccess) {
-            // set cursor if supported
-            val cursorPos = selectionStart + text.length
-            val selectionArgs = Bundle().apply {
-                putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_START_INT, cursorPos)
-                putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_END_INT, cursorPos)
-            }
-            focusedNode.performAction(AccessibilityNodeInfo.ACTION_SET_SELECTION, selectionArgs)
-        } else {
-            // fallback: copy to clipboard
-            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            val clip = ClipData.newPlainText("special_letter", text)
-            clipboard.setPrimaryClip(clip)
-            Toast.makeText(this, "$text 已复制，可粘贴使用", Toast.LENGTH_SHORT).show()
+        // put the cursor back
+        val cursorPos = selectionStart + text.length
+        val selectionArgs = Bundle().apply {
+            putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_START_INT, cursorPos)
+            putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_END_INT, cursorPos)
         }
+        focusedNode.performAction(AccessibilityNodeInfo.ACTION_SET_SELECTION, selectionArgs)
     }
-//
-//
-//    // insert text at current cursor position and restore cursor
-//    fun inputText(text: String) {
-//        val rootNode = rootInActiveWindow ?: return
-//        val focusedNode = findFocusedEditText(rootNode) ?: return
-//
-//        // original text
-//        val originalText = focusedNode.text?.toString() ?: ""
-//        // get the position of the cursor
-//        val selectionStart = focusedNode.textSelectionStart
-//        val selectionEnd = focusedNode.textSelectionEnd
-//
-//        // insert text at the cursor(or replace the selected part)
-//        val newText = StringBuilder(originalText)
-//            .replace(selectionStart, selectionEnd, text)
-//            .toString()
-//
-//        // write to the EditText
-//        val args = Bundle().apply {
-//            putCharSequence(
-//                AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE,
-//                newText
-//            )
-//        }
-//        focusedNode.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
-//
-//        // put the cursor back
-//        val cursorPosition = selectionStart + text.length
-//        val selectionArgs = Bundle().apply {
-//            putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_START_INT, cursorPosition)
-//            putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_END_INT, cursorPosition)
-//        }
-//        focusedNode.performAction(AccessibilityNodeInfo.ACTION_SET_SELECTION, selectionArgs)
-//    }
 
     // find the current focused EditText
     private fun findFocusedEditText(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
