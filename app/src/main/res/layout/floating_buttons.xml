@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="horizontal" android:background="@android:color/holo_blue_light" android:padding="8dp">
+
+  <Button android:id="@+id/btnA" android:text="ä" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+
+  <Button android:id="@+id/btnO" android:text="ö" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+</LinearLayout>
