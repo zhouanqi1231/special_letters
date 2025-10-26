@@ -26,35 +26,33 @@ class MyAccessibilityService : AccessibilityService() {
 
     fun inputText(text: String) {
         val rootNode = rootInActiveWindow ?: return
-        val focusedNode = findFocusedEditText(rootNode) ?: return // get current focus
+        val focusedNode = findFocusedEditText(rootNode) ?: return
 
-        // get original text
-        val originalText = focusedNode.text?.toString() ?: ""
-        // if there's a selection area
-        val selectionStart = focusedNode.textSelectionStart.takeIf { it >= 0 } ?: originalText.length
-        val selectionEnd = focusedNode.textSelectionEnd.takeIf { it >= 0 } ?: originalText.length
+        val currentText = focusedNode.text?.toString() ?: ""
 
-        // form new text
-        val newText = StringBuilder(originalText)
-            .replace(selectionStart, selectionEnd, text)
-            .toString()
+        val newText = if (currentText == "在这里输入") {
+            // If the content is exactly the placeholder, replace it entirely
+            text
+        } else {
+            // Otherwise, insert at the current cursor position
+            val start = focusedNode.textSelectionStart.takeIf { it >= 0 } ?: currentText.length
+            val end = focusedNode.textSelectionEnd.takeIf { it >= 0 } ?: currentText.length
+            StringBuilder(currentText).replace(start, end, text).toString()
+        }
 
-        // try to set text
+        // Set the new text
         val args = Bundle().apply {
-            putCharSequence(
-                AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE,
-                newText
-            )
+            putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, newText)
         }
         focusedNode.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
 
-        // put the cursor back
-        val cursorPos = selectionStart + text.length
-        val selectionArgs = Bundle().apply {
+        // Move cursor to end of inserted text
+        val cursorPos = if (currentText == "在这里输入") text.length else (focusedNode.textSelectionStart.takeIf { it >= 0 } ?: 0) + text.length
+        val selArgs = Bundle().apply {
             putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_START_INT, cursorPos)
             putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_END_INT, cursorPos)
         }
-        focusedNode.performAction(AccessibilityNodeInfo.ACTION_SET_SELECTION, selectionArgs)
+        focusedNode.performAction(AccessibilityNodeInfo.ACTION_SET_SELECTION, selArgs)
     }
 
     // find the current focused EditText
