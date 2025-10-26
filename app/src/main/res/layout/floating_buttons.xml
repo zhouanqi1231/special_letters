@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="horizontal" android:background="@android:color/holo_blue_light" android:padding="8dp">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/floating_container" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="2dp" android:background="#1d1d1d" android:gravity="center_vertical">
 
-  <Button android:id="@+id/btnA" android:text="ä" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+  <Button android:id="@+id/btnA" android:layout_width="40dp" android:layout_height="60dp" android:text="ä" android:textColor="#ededed" android:backgroundTint="#434343" android:textSize="18sp" />
 
-  <Button android:id="@+id/btnO" android:text="ö" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+  <Button android:id="@+id/btnO" android:layout_width="40dp" android:layout_height="60dp" android:text="ö" android:textColor="#ededed" android:backgroundTint="#434343" android:textSize="18sp" />
 </LinearLayout>
