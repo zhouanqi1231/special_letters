@@ -8,13 +8,15 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.example.special_letters.ui.theme.Special_lettersTheme
 import androidx.core.net.toUri
 
@@ -23,7 +25,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // start floating window service
+        // start floating window service if overlay permission granted
         if (!Settings.canDrawOverlays(this)) {
             val intent = Intent(
                 Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
@@ -34,24 +36,35 @@ class MainActivity : ComponentActivity() {
             startFloatingService()
         }
 
-        // to show the initial UI
+        // Compose UI with two buttons
         setContent {
             Special_lettersTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    Column(
+                        modifier = Modifier
+                            .padding(innerPadding)
+                            .fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Button(onClick = { startFloatingService() }) {
+                            Text("打开悬浮窗")
+                        }
+                        Spacer(modifier = Modifier.padding(16.dp))
+                        Button(onClick = {
+                            val intent = Intent(this@MainActivity, FloatingService::class.java)
+                            stopService(intent)
+                        }) {
+                            Text("关闭悬浮窗")
+                        }
+                    }
                 }
             }
         }
     }
 
-    // to show the floating letters. this function can only be called within this class
     private fun startFloatingService() {
-        // an intent to tell FloatingService is to be called
         val intent = Intent(this, FloatingService::class.java)
-        // run floating service in the background, even after user leaves this activity
         startService(intent)
     }
 }
@@ -64,7 +77,6 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
     )
 }
 
-// for UI development
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
