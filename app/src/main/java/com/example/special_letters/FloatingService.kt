@@ -44,31 +44,48 @@ class FloatingService : Service() {
 
         windowManager.addView(floatingView, layoutParams)
 
-        // to drag the floating window
+        // to drag the floating window (click vs drag distinction)
         var initialX = 0
         var initialY = 0
         var initialTouchX = 0f
         var initialTouchY = 0f
 
-        floatingView.setOnTouchListener { _, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    initialX = layoutParams.x
-                    initialY = layoutParams.y
-                    initialTouchX = event.rawX
-                    initialTouchY = event.rawY
-                    true
+        val dragTouchListener = object : View.OnTouchListener {
+            override fun onTouch(v: View, event: MotionEvent): Boolean {
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        initialX = layoutParams.x
+                        initialY = layoutParams.y
+                        initialTouchX = event.rawX
+                        initialTouchY = event.rawY
+                        return true
+                    }
+                    MotionEvent.ACTION_MOVE -> {
+                        val dx = event.rawX - initialTouchX
+                        val dy = event.rawY - initialTouchY
+                        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+                            layoutParams.x = initialX + dx.toInt()
+                            layoutParams.y = initialY + dy.toInt()
+                            windowManager.updateViewLayout(floatingView, layoutParams)
+                            prefs.edit().putInt("last_x", layoutParams.x)
+                                .putInt("last_y", layoutParams.y)
+                                .apply()
+                            return true
+                        }
+                    }
+                    MotionEvent.ACTION_UP -> {
+                        v.performClick()
+                        return true
+                    }
                 }
-                MotionEvent.ACTION_MOVE -> {
-                    layoutParams.x = initialX + (event.rawX - initialTouchX).toInt()
-                    layoutParams.y = initialY + (event.rawY - initialTouchY).toInt()
-                    windowManager.updateViewLayout(floatingView, layoutParams)
-                    prefs.edit().putInt("last_x", layoutParams.x).putInt("last_y", layoutParams.y).apply()
-                    true
-                }
-                else -> false
+                return false
             }
         }
+
+        // Apply dragTouchListener to floatingView and buttons
+        floatingView.setOnTouchListener(dragTouchListener)
+        floatingView.findViewById<Button>(R.id.btnA).setOnTouchListener(dragTouchListener)
+        floatingView.findViewById<Button>(R.id.btnO).setOnTouchListener(dragTouchListener)
 
         // when button pressed, send the letter
         floatingView.findViewById<Button>(R.id.btnA).setOnClickListener {
